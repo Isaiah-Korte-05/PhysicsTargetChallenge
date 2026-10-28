@@ -11,18 +11,27 @@ public class ProjectileLauncher : MonoBehaviour
     {
         if (Keyboard.current != null &&
         Keyboard.current.spaceKey.wasPressedThisFrame &&
-        Time.time >= nextFireTime)
+        Time.time >= nextFireTime && GameManager.Instance != null
+        && GameManager.Instance.CanShoot())
         {
             Shoot();
-            nextFireTime = Time.time + fireCooldown;
         }
     }
     void Shoot()
     {
-        GameManager.Instance.shotFired();
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         Rigidbody rb = projectile.GetComponent<Rigidbody>();
+        ProjectileImpact impact = projectile.GetComponent<ProjectileImpact>();
+        if(rb == null || impact == null)
+        {
+            Debug.LogError("Projectile prefab needs Ridigbody and ProjectileImpact");
+            Destroy(projectile);
+            return;
+        }
+        impact.RegisterShot();
+        GameManager.Instance.shotFired();
         rb.AddForce(firePoint.forward * launchForce, ForceMode.Impulse);
         Destroy(projectile, 5f);
+        nextFireTime = Time.time + fireCooldown;
     }
 }
