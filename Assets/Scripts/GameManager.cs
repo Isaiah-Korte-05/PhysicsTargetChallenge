@@ -9,55 +9,61 @@ public class GameManager : MonoBehaviour
         Lost
     }
 
-    public GameState currentState = GameState.Playing;
+    public GameState state = GameState.Playing;
 
-    public static GameManager Instance;
-    public TMP_Text scoreText;
-    public TMP_Text ammoText;
+    public static GameManager Instance { get; private set; }
+    public TMP_Text scoreText, ammoText, resultText;
 
-    public int score = 0;
+    //public int score = 0;
     public int targetScore = 3;
+    public int startingAmmo = 10;
 
-    public int ammo = 15;
+    private int score, ammo, projectilesInFlight;
     private void Start()
     {
+        ammo = startingAmmo;
         UpdateUI();
     }
 
     private void UpdateUI()
     {
-        scoreText.text = "Score: " + score;
+        scoreText.text = "Score: " + score + "/" + targetScore;
         ammoText.text = "Ammo: " + ammo;
+        resultText.text = state == GameState.Won ? "YOU WIN!" : state == GameState.Lost ? "GAME OVER!" : "";
     }
     void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
     }
     public void AddScore(int points)
     {
+        if (state != GameState.Playing) return;
         score += points;
+        if(score >= targetScore) { state = GameState.Won; }
         UpdateUI();
-        //Debug.Log("Score: " + score);
-        if (score >= targetScore)
-        {
-            currentState = GameState.Won;
-            Debug.Log("You Win!");
-        }
     }
 
     public bool CanShoot()
     {
-        return currentState == GameState.Playing && ammo > 0;
+        return state == GameState.Playing && ammo > 0;
     }
 
-    public void UseAmmo()
+    public void shotFired()
     {
+        if (!CanShoot()) return;
         ammo--;
+        projectilesInFlight++;
         UpdateUI();
-        if (ammo == 0 && score < targetScore)
+    }
+
+    public void ProjectileFinished()
+    {
+        projectilesInFlight = Mathf.Max(projectilesInFlight - 1, 0);
+        if(state == GameState.Playing && ammo == 0 && projectilesInFlight == 0)
         {
-            currentState = GameState.Lost;
-            Debug.Log("Game Over!");
+            state = GameState.Lost;
+            UpdateUI();
         }
     }
 }
