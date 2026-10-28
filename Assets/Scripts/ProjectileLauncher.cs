@@ -19,12 +19,10 @@ public class ProjectileLauncher : MonoBehaviour
     }
     void Shoot()
     {
-        if (GameManager.Instance.CanShoot()) {
-            GameManager.Instance.UseAmmo();
-            GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
-            Rigidbody rb = projectile.GetComponent<Rigidbody>();
-            rb.AddForce(firePoint.forward * launchForce, ForceMode.Impulse);
-            Destroy(projectile, 5f);
-        }
+        GameManager.Instance.shotFired();
+        GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
+        Rigidbody rb = projectile.GetComponent<Rigidbody>();
+        rb.AddForce(firePoint.forward * launchForce, ForceMode.Impulse);
+        Destroy(projectile, 5f);
     }
 }
